@@ -1,0 +1,100 @@
+-- ==========================================
+-- 📚 PRACTICAL 4 — DATABASE TRIGGER ON LIBRARY
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE library_db;
+USE library_db;
+
+-- ✅ Step 2: Create main Library table
+CREATE TABLE library (
+    B_id INT PRIMARY KEY,
+    Title VARCHAR(50),
+    Edition VARCHAR(20),
+    No_of_copies INT
+);
+
+-- ✅ Step 3: Create Library Audit table (to record updates/deletions)
+CREATE TABLE library_audit (
+    B_id INT,
+    Title VARCHAR(50),
+    Edition VARCHAR(20),
+    No_of_copies INT,
+    Date_of_mod DATETIME,
+    Type_of_operation VARCHAR(20),
+    User_name VARCHAR(30)
+);
+
+-- ✅ Step 4: Insert sample records into library table
+INSERT INTO library VALUES
+(101, 'Database Systems', '3rd', 10),
+(102, 'Operating Systems', '2nd', 8),
+(103, 'Computer Networks', '1st', 5),
+(104, 'Software Engineering', '4th', 7),
+(105, 'Data Structures', '2nd', 6);
+
+-- ==========================================
+-- ✅ Step 5: Create triggers for update and delete
+-- ==========================================
+
+-- 🔹 Trigger for UPDATE
+DELIMITER //
+CREATE TRIGGER after_library_update
+AFTER UPDATE ON library
+FOR EACH ROW
+BEGIN
+    INSERT INTO library_audit
+    VALUES (
+        OLD.B_id,
+        OLD.Title,
+        OLD.Edition,
+        OLD.No_of_copies,
+        NOW(),
+        'UPDATE',
+        USER()
+    );
+END //
+DELIMITER ;
+
+-- 🔹 Trigger for DELETE
+DELIMITER //
+CREATE TRIGGER after_library_delete
+AFTER DELETE ON library
+FOR EACH ROW
+BEGIN
+    INSERT INTO library_audit
+    VALUES (
+        OLD.B_id,
+        OLD.Title,
+        OLD.Edition,
+        OLD.No_of_copies,
+        NOW(),
+        'DELETE',
+        USER()
+    );
+END //
+DELIMITER ;
+
+-- ==========================================
+-- ✅ Step 6: Perform update and delete operations
+-- ==========================================
+
+-- Update example
+UPDATE library SET No_of_copies = 12 WHERE B_id = 101;
+
+-- Delete example
+DELETE FROM library WHERE B_id = 103;
+
+-- ==========================================
+-- ✅ Step 7: View results
+-- ==========================================
+
+-- View main table
+SELECT * FROM library;
+
+-- View audit table (shows old data + operation + user)
+SELECT * FROM library_audit;
+
+-- ==========================================
+-- ✅ End of Practical 4 — DATABASE TRIGGER ON LIBRARY
+-- ==========================================
