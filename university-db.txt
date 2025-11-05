@@ -1,15 +1,13 @@
--- 🎓 UNIVERSITY DATABASE PRACTICAL (Problem Statement 1)
--- Execute these steps in MySQL terminal one by one
-
--- 🧩 STEP 1: Create and use the database
+-- ✅ Step 1: Create a new database
 CREATE DATABASE university;
 USE university;
 
--- 🧩 STEP 2: Create required tables
+-- ✅ Step 2: Create all required tables
 CREATE TABLE department (
     dept_no INT,
     dept_name VARCHAR(30) UNIQUE,
-    building_name VARCHAR(30)
+    building_name VARCHAR(30),
+    PRIMARY KEY (dept_no)
 );
 
 CREATE TABLE instructor (
@@ -17,7 +15,8 @@ CREATE TABLE instructor (
     ins_name VARCHAR(30) NOT NULL,
     dept_no INT,
     salary FLOAT,
-    mob_no BIGINT
+    mob_no BIGINT,
+    FOREIGN KEY (dept_no) REFERENCES department(dept_no)
 );
 
 CREATE TABLE course (
@@ -34,39 +33,35 @@ CREATE TABLE teaches (
     year INT
 );
 
--- 🧩 STEP 3: Apply constraints
-ALTER TABLE department ADD PRIMARY KEY (dept_no);
-ALTER TABLE instructor ADD FOREIGN KEY (dept_no) REFERENCES department(dept_no);
-
--- 🧩 STEP 4: Create a view (excluding salary column)
+-- ✅ Step 3: Create a view (without salary column)
 CREATE VIEW view_instructor AS
 SELECT ins_id, ins_name, dept_no, mob_no FROM instructor;
 
--- 🧩 STEP 5: Insert sample records into department and instructor (via view)
+-- ✅ Step 4: Insert sample data into department
 INSERT INTO department VALUES (1, 'Computer', 'Bldg-A');
 INSERT INTO department VALUES (2, 'Mechanical', 'Bldg-B');
 
+-- ✅ Step 5: Insert records into view (auto-inserts into instructor)
 INSERT INTO view_instructor VALUES (101, 'Aditi', 1, 9876543210);
 INSERT INTO view_instructor VALUES (102, 'Rohan', 2, 9998887776);
 
--- 🧩 STEP 6: Update department name
+-- ✅ Step 6: Update a department name
 UPDATE department SET dept_name = 'IT' WHERE dept_no = 1;
 
--- 🧩 STEP 7: Delete a record using view
+-- ✅ Step 7: Delete a record through the view
 DELETE FROM view_instructor WHERE ins_id = 102;
 
--- 🧩 STEP 8: Delete the last record from instructor table
+-- ✅ Step 8: Delete the last instructor record (optional)
 DELETE FROM instructor ORDER BY ins_id DESC LIMIT 1;
 
--- 🧩 STEP 9: Apply AUTO_INCREMENT to course_id (start from 51)
-ALTER TABLE course MODIFY course_id INT AUTO_INCREMENT;
+-- ✅ Step 9: Set AUTO_INCREMENT value for course table
+-- Note: AUTO_INCREMENT requires the column to be a PRIMARY KEY
+ALTER TABLE course MODIFY course_id INT PRIMARY KEY AUTO_INCREMENT;
 ALTER TABLE course AUTO_INCREMENT = 51;
 
--- 🧩 STEP 10: Display databases and tables
+-- ✅ Step 10: Display results
 SHOW DATABASES;
 SHOW TABLES;
 
--- 🧩 (OPTIONAL) If you want to delete teaches table at the end:
+-- ⚠️ Note: Do NOT drop tables in exam unless asked
 -- DROP TABLE teaches;
-
--- ✅ PRACTICAL COMPLETED SUCCESSFULLY
