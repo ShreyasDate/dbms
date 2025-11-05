@@ -1,0 +1,107 @@
+-- ==========================================
+-- 🩺 PRACTICAL 5 — MEDICAL DATABASE
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE medical_db2;
+USE medical_db2;
+
+-- ✅ Step 2: Create tables
+CREATE TABLE patient (
+    pat_id INT PRIMARY KEY,
+    pat_name VARCHAR(30),
+    age INT,
+    city VARCHAR(30)
+);
+
+CREATE TABLE doctor (
+    doc_id INT PRIMARY KEY,
+    doc_name VARCHAR(30),
+    qualification VARCHAR(20),
+    experience INT,
+    dept VARCHAR(30),
+    city VARCHAR(30),
+    salary FLOAT
+);
+
+CREATE TABLE treats (
+    doc_id INT,
+    pat_id INT,
+    disease VARCHAR(30),
+    amount_collected FLOAT,
+    FOREIGN KEY (doc_id) REFERENCES doctor(doc_id),
+    FOREIGN KEY (pat_id) REFERENCES patient(pat_id)
+);
+
+-- ✅ Step 3: Insert sample records
+INSERT INTO patient VALUES
+(1, 'Aarav', 25, 'Pune'),
+(2, 'Riya', 40, 'Mumbai'),
+(3, 'Kabir', 55, 'Delhi'),
+(4, 'Sneha', 30, 'Pune'),
+(5, 'Arjun', 65, 'Delhi');
+
+INSERT INTO doctor VALUES
+(101, 'Dr. Mehta', 'MBBS', 10, 'Cardiology', 'Pune', 80000),
+(102, 'Dr. Sharma', 'MD', 15, 'Neurology', 'Mumbai', 120000),
+(103, 'Dr. Patel', 'MBBS', 8, 'Cardiology', 'Delhi', 70000),
+(104, 'Dr. Rao', 'MS', 20, 'Surgery', 'Chennai', 150000),
+(105, 'Dr. Khan', 'MBBS', 5, 'Orthopedics', 'Delhi', 60000);
+
+INSERT INTO treats VALUES
+(101, 1, 'Fever', 500),
+(102, 2, 'Diabetes', 800),
+(103, 3, 'Asthma', 600),
+(104, 4, 'Injury', 1000),
+(105, 5, 'Cancer', 2000);
+
+-- ==========================================
+-- ✅ Step 4: Queries
+-- ==========================================
+
+-- 1️⃣ List the cities in which either doctors or patients live
+SELECT DISTINCT city FROM (
+    SELECT city FROM doctor
+    UNION
+    SELECT city FROM patient
+) AS all_cities;
+
+-- 2️⃣ List the cities where both doctors and patients live
+SELECT DISTINCT d.city
+FROM doctor d
+JOIN patient p ON d.city = p.city;
+
+-- 3️⃣ Find the doctors who have NOT treated any patient
+SELECT doc_name FROM doctor
+WHERE doc_id NOT IN (SELECT DISTINCT doc_id FROM treats);
+
+-- 4️⃣ Display names of doctors and patients as a single column
+SELECT doc_name AS 'Name' FROM doctor
+UNION
+SELECT pat_name AS 'Name' FROM patient;
+
+-- 5️⃣ Display names allowing duplicates (UNION ALL)
+SELECT doc_name AS 'Name' FROM doctor
+UNION ALL
+SELECT pat_name AS 'Name' FROM patient;
+
+-- 6️⃣ Find total money collected from all treatments
+SELECT SUM(amount_collected) AS total_money_collected FROM treats;
+
+-- 7️⃣ Find average salary of each department
+SELECT dept, AVG(salary) AS avg_salary
+FROM doctor
+GROUP BY dept;
+
+-- ==========================================
+-- ✅ Step 5: Verification
+-- ==========================================
+SHOW DATABASES;
+SHOW TABLES;
+DESC patient;
+DESC doctor;
+DESC treats;
+
+-- ==========================================
+-- ✅ End of PRACTICAL 5 — MEDICAL DATABASE
+-- ==========================================
