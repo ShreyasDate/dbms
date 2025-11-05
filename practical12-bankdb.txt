@@ -1,0 +1,465 @@
+mysql> -- ==========================================
+mysql> -- 💰 PRACTICAL 12 — BANK DATABASE (Extended)
+mysql> -- ==========================================
+mysql>
+mysql> -- ✅ Step 1: Create database and switch to it
+mysql> CREATE DATABASE IF NOT EXISTS bank_extended_db;
+k_extended_db;
+
+-- ==========================================
+-- ✅ Step 2: Create all required tables
+-- ==========================================
+
+CREATE TABLE branch_master (
+    branch_id INT PRIMARY KEY,
+    bname VARCHAR(50)
+);
+
+CREATE TABLE employee_master (
+    emp_no INT PRIMARY KEY,
+    e_name VARCHAR(50),
+    branch_id INT,
+    salary FLOAT,
+    dept VARCHAR(30),
+    manager_id INT,
+    FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id),
+    FOREIGN KEY (manager_id) REFERENCES employee_master(emp_no) ON DELETE SET NULL
+);
+
+CREATE TABLE contact_details (
+    emp_id INT,
+    emailid VARCHAR(50),
+    phnno BIGINT,
+    FOREIGN KEY (emp_id) REFERENCES employee_master(emp_no) ON DELETE SET NULL
+);
+
+CREATE TABLE emp_address_details (
+    emp_id INT,
+    street VARCHAR(50),
+    city VARCHAR(30),
+    state VARCHAR(30),
+    FOREIGN KEY (emp_id) REFERENCES employee_master(emp_no) ON DELETE CASCADE
+);
+
+CREATE TABLE branch_address (
+    branch_id INT,
+    city VARCHAR(30),
+    state VARCHAR(30),
+    FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id)
+);
+
+-- ==========================================
+-- ✅ Step 3: Insert sample data
+-- ==========================================
+
+-- Branch master
+INSERT INTO branch_master VALUES
+(1, 'Kothrud Branch'),
+(2, 'Vadgaon Branch'),
+(3, 'Shivaji Nagar Branch'),
+(4, 'Warje Branch'),
+(5, 'Camp Branch');
+
+-- Employees
+INSERT INTO employee_master VALUES
+(101, 'Amit', 1, 30000, 'Admin', NULL),
+(102, 'Riya', 2, 25000, 'Clerk', 101),
+(103, 'Sohan', 3, 35000, 'AdminQuery OK, 1 row affected (0.01 sec)
+
+mysql> USE bank_extended_db;
+', 101),
+(104, 'Priya', 4, 28000, 'HR', 103),
+(105, 'Rohit', 5, 32000, 'Admin', 103);
+
+-- Contact details
+INSERT INTO contact_details VALUES
+(101, 'amit@bank.com', 9876543210),
+(102, 'riya@bank.com', 9123456789),
+(103, 'sohan@bank.com', 9786543120),
+(104, NULL, 9988776655),
+(105, 'rohit@bank.com', 8877665544);
+
+-- Employee address details
+INSERT INTO emp_address_details VALUES
+(101, 'MG Road', 'Pune', 'Maharashtra'),
+(102, 'Sinhgad Road', 'Pune', 'Maharashtra'),
+(103, 'JM Road', 'Pune', 'Maharashtra'),
+(104Database changed
+mysql>
+mysql> -- ==========================================
+mysql> -- ✅ Step 2: Create all required tables
+mysql> -- ==========================================
+mysql>
+mysql> CREATE TABLE branch_master (
+    ->     branch_id INT PRIMARY KEY,
+    ->     bname VARCHAR(50)
+    -> );
+, 'Karve Nagar', 'Pune', 'Maharashtra'),
+(105, 'Camp', 'Pune', 'Maharashtra');
+
+-- Branch address
+INSERT INTO branch_address VALUES
+(1, 'Kothrud', 'Maharashtra'),
+(2, 'Vadgaon', 'Maharashtra'),
+(3, 'Shivaji Nagar', 'Maharashtra'),
+(4, 'Warje', 'Maharashtra'),
+(5, 'Camp', 'Maharashtra');
+
+-- ==========================================
+-- ✅ Step 4: Queries
+-- ==========================================
+
+-- 1️⃣ List details of employees who belong to 'Admin' dept along with branch name
+SELECT e.emp_no, e.e_name, e.salary, e.dept, b.bname
+FROM employee_master e
+JOIN branch_master b ON e.branch_id = b.branch_id
+WHERE e.dept = 'Admin';
+
+-- 2️⃣ List employee’s name along with phone number and city (INNER JOIN)
+SELECT e.e_name, c.phnno, a.city
+FROM employee_master e
+INNER JOIN contact_details c ON e.emp_no = c.emp_id
+INNER JOIN emp_address_details a ON e.emp_no = a.emp_id;
+
+-- 3️⃣ List employee’s contact details irrespective of whether they have any (LEFT JOIN)
+SELECT e.e_name, c.emailid, c.phnno
+FROM employee_master e
+LEFT JOIN contact_details c ON e.emp_no = c.emp_id;
+
+-- 4️⃣ Retrieve employee’s name and their respective manager’s name
+SELECT e.e_name AS Employee, m.e_name AS Manager
+FROM employee_master e
+LEFT JOIN employee_master m ON e.manager_id = m.emp_no;
+
+-- 5️⃣ Find employee whose salary is more than all employees working at 'Vadgaon Branch'
+SELECT e.e_name, e.salary
+FROM employee_master e
+JOIN branch_master b ON e.branch_id = b.branch_id
+WHERE e.salary > ALL (
+    SELECT salary
+    FROM employee_master em
+    JOIN branch_master bm ON em.branch_id = bm.branch_id
+    WHERE bm.bname = 'Vadgaon Branch'
+);
+
+-- 6️⃣ Find employees who do NOT work at 'Vadgaon Branch'
+SELECT e.e_name, b.bname
+FROM employee_master e
+JOIN branch_master b ON e.branch_id = b.branch_id
+WHERE b.bname <> 'Vadgaon Branch';
+
+-- ==========================================
+-- ✅ Step 5: Verification
+-- ==========================================
+SHOW DATABASES;
+SHOW TABLES;
+DESC branch_master;
+DESC employee_master;
+DESC contact_details;
+DESC emp_address_details;
+DESC branch_address;
+
+-- ==========================================
+-- ✅ End of PRACTICAL 12 — BANK DATABASE
+-- ==========================================
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> CREATE TABLE employee_master (
+    ->     emp_no INT PRIMARY KEY,
+    ->     e_name VARCHAR(50),
+    ->     branch_id INT,
+    ->     salary FLOAT,
+    ->     dept VARCHAR(30),
+    ->     manager_id INT,
+    ->     FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id),
+    ->     FOREIGN KEY (manager_id) REFERENCES employee_master(emp_no) ON DELETE SET NULL
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> CREATE TABLE contact_details (
+    ->     emp_id INT,
+    ->     emailid VARCHAR(50),
+    ->     phnno BIGINT,
+    ->     FOREIGN KEY (emp_id) REFERENCES employee_master(emp_no) ON DELETE SET NULL
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> CREATE TABLE emp_address_details (
+    ->     emp_id INT,
+    ->     street VARCHAR(50),
+    ->     city VARCHAR(30),
+    ->     state VARCHAR(30),
+    ->     FOREIGN KEY (emp_id) REFERENCES employee_master(emp_no) ON DELETE CASCADE
+    -> );
+Query OK, 0 rows affected (0.01 sec)
+
+mysql>
+mysql> CREATE TABLE branch_address (
+    ->     branch_id INT,
+    ->     city VARCHAR(30),
+    ->     state VARCHAR(30),
+    ->     FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id)
+    -> );
+Query OK, 0 rows affected (0.02 sec)
+
+mysql>
+mysql> -- ==========================================
+mysql> -- ✅ Step 3: Insert sample data
+mysql> -- ==========================================
+mysql>
+mysql> -- Branch master
+mysql> INSERT INTO branch_master VALUES
+    -> (1, 'Kothrud Branch'),
+    -> (2, 'Vadgaon Branch'),
+    -> (3, 'Shivaji Nagar Branch'),
+    -> (4, 'Warje Branch'),
+    -> (5, 'Camp Branch');
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Employees
+mysql> INSERT INTO employee_master VALUES
+    -> (101, 'Amit', 1, 30000, 'Admin', NULL),
+    -> (102, 'Riya', 2, 25000, 'Clerk', 101),
+    -> (103, 'Sohan', 3, 35000, 'Admin', 101),
+    -> (104, 'Priya', 4, 28000, 'HR', 103),
+    -> (105, 'Rohit', 5, 32000, 'Admin', 103);
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Contact details
+mysql> INSERT INTO contact_details VALUES
+    -> (101, 'amit@bank.com', 9876543210),
+    -> (102, 'riya@bank.com', 9123456789),
+    -> (103, 'sohan@bank.com', 9786543120),
+    -> (104, NULL, 9988776655),
+    -> (105, 'rohit@bank.com', 8877665544);
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Employee address details
+mysql> INSERT INTO emp_address_details VALUES
+    -> (101, 'MG Road', 'Pune', 'Maharashtra'),
+    -> (102, 'Sinhgad Road', 'Pune', 'Maharashtra'),
+    -> (103, 'JM Road', 'Pune', 'Maharashtra'),
+    -> (104, 'Karve Nagar', 'Pune', 'Maharashtra'),
+    -> (105, 'Camp', 'Pune', 'Maharashtra');
+Query OK, 5 rows affected (0.01 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- Branch address
+mysql> INSERT INTO branch_address VALUES
+    -> (1, 'Kothrud', 'Maharashtra'),
+    -> (2, 'Vadgaon', 'Maharashtra'),
+    -> (3, 'Shivaji Nagar', 'Maharashtra'),
+    -> (4, 'Warje', 'Maharashtra'),
+    -> (5, 'Camp', 'Maharashtra');
+Query OK, 5 rows affected (0.00 sec)
+Records: 5  Duplicates: 0  Warnings: 0
+
+mysql>
+mysql> -- ==========================================
+mysql> -- ✅ Step 4: Queries
+mysql> -- ==========================================
+mysql>
+mysql> -- 1️⃣ List details of employees who belong to 'Admin' dept along with branch name
+mysql> SELECT e.emp_no, e.e_name, e.salary, e.dept, b.bname
+    -> FROM employee_master e
+    -> JOIN branch_master b ON e.branch_id = b.branch_id
+    -> WHERE e.dept = 'Admin';
++--------+--------+--------+-------+----------------------+
+| emp_no | e_name | salary | dept  | bname                |
++--------+--------+--------+-------+----------------------+
+|    101 | Amit   |  30000 | Admin | Kothrud Branch       |
+|    103 | Sohan  |  35000 | Admin | Shivaji Nagar Branch |
+|    105 | Rohit  |  32000 | Admin | Camp Branch          |
++--------+--------+--------+-------+----------------------+
+3 rows in set (0.00 sec)
+
+mysql>
+mysql> -- 2️⃣ List employee’s name along with phone number and city (INNER JOIN)
+mysql> SELECT e.e_name, c.phnno, a.city
+    -> FROM employee_master e
+    -> INNER JOIN contact_details c ON e.emp_no = c.emp_id
+    -> INNER JOIN emp_address_details a ON e.emp_no = a.emp_id;
++--------+------------+------+
+| e_name | phnno      | city |
++--------+------------+------+
+| Amit   | 9876543210 | Pune |
+| Riya   | 9123456789 | Pune |
+| Sohan  | 9786543120 | Pune |
+| Priya  | 9988776655 | Pune |
+| Rohit  | 8877665544 | Pune |
++--------+------------+------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> -- 3️⃣ List employee’s contact details irrespective of whether they have any (LEFT JON)
+mysql> SELECT e.e_name, c.emailid, c.phnno
+    -> FROM employee_master e
+    -> LEFT JOIN contact_details c ON e.emp_no = c.emp_id;
++--------+----------------+------------+
+| e_name | emailid        | phnno      |
++--------+----------------+------------+
+| Amit   | amit@bank.com  | 9876543210 |
+| Riya   | riya@bank.com  | 9123456789 |
+| Sohan  | sohan@bank.com | 9786543120 |
+| Priya  | NULL           | 9988776655 |
+| Rohit  | rohit@bank.com | 8877665544 |
++--------+----------------+------------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> -- 4️⃣ Retrieve employee’s name and their respective manager’s name
+mysql> SELECT e.e_name AS Employee, m.e_name AS Manager
+    -> FROM employee_master e
+    -> LEFT JOIN employee_master m ON e.manager_id = m.emp_no;
++----------+---------+
+| Employee | Manager |
++----------+---------+
+| Amit     | NULL    |
+| Riya     | Amit    |
+| Sohan    | Amit    |
+| Priya    | Sohan   |
+| Rohit    | Sohan   |
++----------+---------+
+5 rows in set (0.00 sec)
+
+mysql>
+mysql> -- 5️⃣ Find employee whose salary is more than all employees working at 'Vadgaon Branh'
+mysql> SELECT e.e_name, e.salary
+    -> FROM employee_master e
+    -> JOIN branch_master b ON e.branch_id = b.branch_id
+    -> WHERE e.salary > ALL (
+    ->     SELECT salary
+    ->     FROM employee_master em
+    ->     JOIN branch_master bm ON em.branch_id = bm.branch_id
+    ->     WHERE bm.bname = 'Vadgaon Branch'
+    -> );
++--------+--------+
+| e_name | salary |
++--------+--------+
+| Amit   |  30000 |
+| Sohan  |  35000 |
+| Priya  |  28000 |
+| Rohit  |  32000 |
++--------+--------+
+4 rows in set (0.00 sec)
+
+mysql>
+mysql> -- 6️⃣ Find employees who do NOT work at 'Vadgaon Branch'
+mysql> SELECT e.e_name, b.bname
+    -> FROM employee_master e
+    -> JOIN branch_master b ON e.branch_id = b.branch_id
+    -> WHERE b.bname <> 'Vadgaon Branch';
++--------+----------------------+
+| e_name | bname                |
++--------+----------------------+
+| Amit   | Kothrud Branch       |
+| Sohan  | Shivaji Nagar Branch |
+| Priya  | Warje Branch         |
+| Rohit  | Camp Branch          |
++--------+----------------------+
+4 rows in set (0.00 sec)
+
+mysql>
+mysql> -- ==========================================
+mysql> -- ✅ Step 5: Verification
+mysql> -- ==========================================
+mysql> SHOW DATABASES;
++--------------------+
+| Database           |
++--------------------+
+| bank_db            |
+| bank_extended_db   |
+| information_schema |
+| library_db         |
+| library_trigger_db |
+| medical_db         |
+| medical_db2        |
+| mysql              |
+| performance_schema |
+| sys                |
+| test               |
+| university         |
+| university_v2      |
++--------------------+
+13 rows in set (0.00 sec)
+
+mysql> SHOW TABLES;
++----------------------------+
+| Tables_in_bank_extended_db |
++----------------------------+
+| branch_address             |
+| branch_master              |
+| contact_details            |
+| emp_address_details        |
+| employee_master            |
++----------------------------+
+5 rows in set (0.00 sec)
+
+mysql> DESC branch_master;
++-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| branch_id | int         | NO   | PRI | NULL    |       |
+| bname     | varchar(50) | YES  |     | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+2 rows in set (0.00 sec)
+
+mysql> DESC employee_master;
++------------+-------------+------+-----+---------+-------+
+| Field      | Type        | Null | Key | Default | Extra |
++------------+-------------+------+-----+---------+-------+
+| emp_no     | int         | NO   | PRI | NULL    |       |
+| e_name     | varchar(50) | YES  |     | NULL    |       |
+| branch_id  | int         | YES  | MUL | NULL    |       |
+| salary     | float       | YES  |     | NULL    |       |
+| dept       | varchar(30) | YES  |     | NULL    |       |
+| manager_id | int         | YES  | MUL | NULL    |       |
++------------+-------------+------+-----+---------+-------+
+6 rows in set (0.00 sec)
+
+mysql> DESC contact_details;
++---------+-------------+------+-----+---------+-------+
+| Field   | Type        | Null | Key | Default | Extra |
++---------+-------------+------+-----+---------+-------+
+| emp_id  | int         | YES  | MUL | NULL    |       |
+| emailid | varchar(50) | YES  |     | NULL    |       |
+| phnno   | bigint      | YES  |     | NULL    |       |
++---------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql> DESC emp_address_details;
++--------+-------------+------+-----+---------+-------+
+| Field  | Type        | Null | Key | Default | Extra |
++--------+-------------+------+-----+---------+-------+
+| emp_id | int         | YES  | MUL | NULL    |       |
+| street | varchar(50) | YES  |     | NULL    |       |
+| city   | varchar(30) | YES  |     | NULL    |       |
+| state  | varchar(30) | YES  |     | NULL    |       |
++--------+-------------+------+-----+---------+-------+
+4 rows in set (0.00 sec)
+
+mysql> DESC branch_address;
++-----------+-------------+------+-----+---------+-------+
+| Field     | Type        | Null | Key | Default | Extra |
++-----------+-------------+------+-----+---------+-------+
+| branch_id | int         | YES  | MUL | NULL    |       |
+| city      | varchar(30) | YES  |     | NULL    |       |
+| state     | varchar(30) | YES  |     | NULL    |       |
++-----------+-------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+mysql>
+mysql> -- ==========================================
+mysql> -- ✅ End of PRACTICAL 12 — BANK DATABASE
+mysql> -- ==========================================
+mysql>
