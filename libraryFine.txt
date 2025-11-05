@@ -1,0 +1,136 @@
+-- ==========================================
+-- 📘 PRACTICAL 9 — UNNAMED PL/SQL BLOCK (Library Fine System)
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE IF NOT EXISTS library_fine_db;
+USE library_fine_db;
+
+-- ==========================================
+-- ✅ Step 2: Create required tables
+-- ==========================================
+
+CREATE TABLE Borrower (
+    Roll_no INT PRIMARY KEY,
+    Name VARCHAR(50),
+    DateOfIssue DATE,
+    NameOfBook VARCHAR(100),
+    Status VARCHAR(20)
+);
+
+CREATE TABLE Fine (
+    Roll_no INT,
+    Date DATE,
+    Amt INT,
+    FOREIGN KEY (Roll_no) REFERENCES Borrower(Roll_no)
+);
+
+-- ==========================================
+-- ✅ Step 3: Insert sample data
+-- ==========================================
+
+INSERT INTO Borrower VALUES
+(1, 'Amit', '2025-10-01', 'DBMS Concepts', 'Issued'),
+(2, 'Riya', '2025-09-25', 'Operating Systems', 'Issued'),
+(3, 'Sohan', '2025-09-15', 'Computer Networks', 'Issued'),
+(4, 'Priya', '2025-10-10', 'Data Structures', 'Issued'),
+(5, 'Rohit', '2025-09-05', 'Software Engineering', 'Issued');
+
+-- ==========================================
+-- ✅ Step 4: Create Stored Procedure for Fine Calculation
+-- ==========================================
+-- This simulates an unnamed PL/SQL block in MySQL using DECLARE + BEGIN…END
+
+DELIMITER //
+
+CREATE PROCEDURE CalculateFine(IN roll INT, IN return_date DATE)
+BEGIN
+    DECLARE issue_date DATE;
+    DECLARE days_diff INT;
+    DECLARE fine_amt INT DEFAULT 0;
+    DECLARE book_name VARCHAR(100);
+
+    -- Exception-like handler (if Roll_no not found)
+    DECLARE CONTINUE HANDLER FOR NOT FOUND
+    BEGIN
+        SELECT CONCAT('⚠️ Roll number ', roll, ' not found in Borrower table.') AS Message;
+    END;
+
+    -- Retrieve issue date and book name
+    SELECT DateOfIssue, NameOfBook INTO issue_date, book_name
+    FROM Borrower
+    WHERE Roll_no = roll;
+
+    -- Calculate number of days between issue and return
+    SET days_diff = DATEDIFF(return_date, issue_date);
+
+    -- Calculate fine based on days
+    IF days_diff > 30 THEN
+        SET fine_amt = (days_diff - 30) * 5; -- Rs. 5 per day beyond 30
+    ELSE
+        SET fine_amt = 0; -- No fine if returned within 30 days
+    END IF;
+
+    -- Update Status to Returned
+    UPDATE Borrower SET Status = 'Returned' WHERE Roll_no = roll;
+
+    -- Insert record into Fine table if applicable
+    IF fine_amt > 0 THEN
+        INSERT INTO Fine VALUES (roll, return_date, fine_amt);
+        SELECT CONCAT('Fine of Rs. ', fine_amt, ' recorded for Roll No ', roll) AS Message;
+    ELSE
+        SELECT CONCAT('No fine. Book returned within 30 days for Roll No ', roll) AS Message;
+    END IF;
+END;
+//
+
+DELIMITER ;
+
+-- ==========================================
+-- ✅ Step 5: Execute the procedure (simulate PL/SQL block)
+-- ==========================================
+
+-- Case 1: Returned after 40 days → fine applicable
+CALL CalculateFine(1, '2025-11-10');
+
+-- Case 2: Returned within 20 days → no fine
+CALL CalculateFine(4, '2025-10-25');
+
+-- Case 3: Invalid roll number (error handler test)
+CALL CalculateFine(10, '2025-10-30');
+
+-- ==========================================
+-- ✅ Step 6: View updated tables
+-- ==========================================
+
+SELECT * FROM Borrower;
+SELECT * FROM Fine;
+
+-- ==========================================
+-- ✅ EXPECTED OUTPUT
+-- ==========================================
+-- Case 1 → Rs. 50 fine (10 days × 5)
+-- Case 2 → No fine
+-- Case 3 → Warning: Roll number not found
+--
+-- Fine Table Example Output:
+-- +---------+------------+------+
+-- | Roll_no | Date       | Amt  |
+-- +---------+------------+------+
+-- |       1 | 2025-11-10 |   50 |
+-- +---------+------------+------+
+--
+-- Borrower Table Example Output:
+-- +---------+--------+-------------+----------------------+-----------+
+-- | Roll_no | Name   | DateOfIssue | NameOfBook           | Status    |
+-- +---------+--------+-------------+----------------------+-----------+
+-- |       1 | Amit   | 2025-10-01  | DBMS Concepts        | Returned  |
+-- |       2 | Riya   | 2025-09-25  | Operating Systems    | Issued    |
+-- |       3 | Sohan  | 2025-09-15  | Computer Networks    | Issued    |
+-- |       4 | Priya  | 2025-10-10  | Data Structures      | Returned  |
+-- |       5 | Rohit  | 2025-09-05  | Software Engineering | Issued    |
+-- +---------+--------+-------------+----------------------+-----------+
+
+-- ==========================================
+-- ✅ End of PRACTICAL 9 — UNNAMED PL/SQL BLOCK
+-- ==========================================
