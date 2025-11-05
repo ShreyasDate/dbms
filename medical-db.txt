@@ -1,0 +1,101 @@
+-- ==========================================
+-- 🏥 PRACTICAL 3 — MEDICAL DATABASE
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE medical_db;
+USE medical_db;
+
+-- ✅ Step 2: Create all required tables
+CREATE TABLE patient (
+    pat_id INT PRIMARY KEY,
+    pat_name VARCHAR(30),
+    age INT,
+    city VARCHAR(30)
+);
+
+CREATE TABLE doctor (
+    doc_id INT PRIMARY KEY,
+    doc_name VARCHAR(30),
+    qualification VARCHAR(20),
+    experience INT,
+    dept_id INT,
+    salary FLOAT
+);
+
+CREATE TABLE treats (
+    doc_id INT,
+    pat_id INT,
+    disease VARCHAR(30),
+    FOREIGN KEY (doc_id) REFERENCES doctor(doc_id),
+    FOREIGN KEY (pat_id) REFERENCES patient(pat_id)
+);
+
+-- ✅ Step 3: Insert at least 5 records in each table
+INSERT INTO patient VALUES
+(1, 'Aarav', 25, 'Pune'),
+(2, 'Riya', 40, 'Mumbai'),
+(3, 'Kabir', 55, 'Delhi'),
+(4, 'Sneha', 30, 'Chennai'),
+(5, 'Arjun', 65, 'Bangalore');
+
+INSERT INTO doctor VALUES
+(101, 'Dr. Mehta', 'MBBS', 10, 1, 80000),
+(102, 'Dr. Sharma', 'MD', 15, 2, 120000),
+(103, 'Dr. Patel', 'MBBS', 8, 1, 70000),
+(104, 'Dr. Rao', 'MS', 20, 3, 150000),
+(105, 'Dr. Khan', 'MBBS', 5, 2, 60000);
+
+INSERT INTO treats VALUES
+(101, 1, 'Fever'),
+(102, 2, 'Diabetes'),
+(103, 3, 'Asthma'),
+(104, 4, 'Cancer'),
+(105, 5, 'Fever');
+
+-- ==========================================
+-- ✅ QUERIES
+-- ==========================================
+
+-- 1️⃣ Display all patients between the age group 18–50
+SELECT * FROM patient WHERE age BETWEEN 18 AND 50;
+
+-- 2️⃣ Change the qualification of doctor ‘Dr. Sharma’ from MBBS to MD
+UPDATE doctor SET qualification = 'MD' WHERE doc_name = 'Dr. Sharma';
+
+-- 3️⃣ Display patients suffering from same disease
+SELECT disease, GROUP_CONCAT(pat_name) AS patients
+FROM patient p
+JOIN treats t ON p.pat_id = t.pat_id
+GROUP BY disease;
+
+-- 4️⃣ Display department-wise total salary of the doctors
+SELECT dept_id, SUM(salary) AS total_salary
+FROM doctor
+GROUP BY dept_id;
+
+-- 5️⃣ Find the department having the highest total salary
+SELECT dept_id, SUM(salary) AS total_salary
+FROM doctor
+GROUP BY dept_id
+ORDER BY total_salary DESC
+LIMIT 1;
+
+-- 6️⃣ Find the average salary of doctors in each department
+SELECT dept_id, AVG(salary) AS avg_salary
+FROM doctor
+GROUP BY dept_id;
+
+-- 7️⃣ Find how many doctors work in hospital (total count)
+SELECT COUNT(*) AS total_doctors FROM doctor;
+
+-- ✅ Step 8: Verification (optional)
+SHOW DATABASES;
+SHOW TABLES;
+DESC patient;
+DESC doctor;
+DESC treats;
+
+-- ==========================================
+-- ✅ End of Practical 3 — MEDICAL DATABASE
+-- ==========================================
