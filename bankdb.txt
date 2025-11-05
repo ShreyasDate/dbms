@@ -1,0 +1,138 @@
+-- ==========================================
+-- 🏦 PRACTICAL 8 — BANK DATABASE
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE IF NOT EXISTS bank_db;
+USE bank_db;
+
+-- ✅ Step 2: Create all required tables
+CREATE TABLE IF NOT EXISTS branch_master (
+    branch_id INT PRIMARY KEY,
+    bname VARCHAR(50)
+);
+
+CREATE TABLE IF NOT EXISTS emp_master (
+    emp_id INT PRIMARY KEY,
+    emp_name VARCHAR(50),
+    dept VARCHAR(30),
+    salary FLOAT,
+    branch_id INT,
+    manager_id INT,
+    FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id) ON DELETE CASCADE,
+    FOREIGN KEY (manager_id) REFERENCES emp_master(emp_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS contact_details (
+    emp_id INT,
+    email_id VARCHAR(50),
+    phone_no BIGINT,
+    FOREIGN KEY (emp_id) REFERENCES emp_master(emp_id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS emp_address (
+    emp_id INT,
+    street VARCHAR(50),
+    city VARCHAR(30),
+    state VARCHAR(30),
+    branch_id INT,
+    FOREIGN KEY (emp_id) REFERENCES emp_master(emp_id) ON DELETE CASCADE,
+    FOREIGN KEY (branch_id) REFERENCES branch_master(branch_id)
+);
+
+-- ==========================================
+-- ✅ Step 3: Insert sample data (correct order)
+-- ==========================================
+
+INSERT INTO branch_master VALUES
+(1, 'Pune Branch'),
+(2, 'Mumbai Branch'),
+(3, 'Delhi Branch');
+
+-- Insert MANAGERS first
+INSERT INTO emp_master VALUES
+(101, 'Amit', 'Manager', 25000, 1, NULL),
+(104, 'Priya', 'Manager', 30000, 2, NULL);
+
+-- Now insert employees who report to managers
+INSERT INTO emp_master VALUES
+(102, 'Riya', 'Clerk', 15000, 1, 101),
+(103, 'Sohan', 'Cashier', 18000, 2, 104),
+(105, 'Rohit', 'Officer', 12000, 3, 104),
+(106, 'Sneha', 'Clerk', 10000, 3, 104);
+
+-- Insert contact details
+INSERT INTO contact_details VALUES
+(101, 'amit@bank.com', 9876543210),
+(102, NULL, 9123456789),
+(103, 'sohan@bank.com', 9786543120),
+(104, 'priya@bank.com', 9988776655),
+(105, NULL, 8877665544),
+(106, 'sneha@bank.com', 9765432180);
+
+-- Insert employee addresses
+INSERT INTO emp_address VALUES
+(101, 'MG Road', 'Pune', 'Maharashtra', 1),
+(102, 'Koregaon Park', 'Pune', 'Maharashtra', 1),
+(103, 'Bandra', 'Mumbai', 'Maharashtra', 2),
+(104, 'Andheri', 'Mumbai', 'Maharashtra', 2),
+(105, 'Connaught Place', 'Delhi', 'Delhi', 3),
+(106, 'Karol Bagh', 'Delhi', 'Delhi', 3);
+
+-- ==========================================
+-- ✅ Step 4: Queries
+-- ==========================================
+
+-- 1️⃣ List the employee details along with branch name using INNER JOIN in order of employee name
+SELECT e.emp_id, e.emp_name, e.dept, e.salary, b.bname
+FROM emp_master e
+INNER JOIN branch_master b ON e.branch_id = b.branch_id
+ORDER BY e.emp_name;
+
+-- 2️⃣ List the employee’s name with their contact details if they have or not (LEFT JOIN)
+SELECT e.emp_name, c.email_id, c.phone_no
+FROM emp_master e
+LEFT JOIN contact_details c ON e.emp_id = c.emp_id;
+
+-- 3️⃣ Delete first two employees from emp_master table
+DELETE FROM emp_master ORDER BY emp_id LIMIT 2;
+
+-- 4️⃣ Retrieve employee’s name and their respective manager’s name
+SELECT e.emp_name AS Employee, m.emp_name AS Manager
+FROM emp_master e
+LEFT JOIN emp_master m ON e.manager_id = m.emp_id;
+
+-- 5️⃣ List employee details along with branch name using NATURAL JOIN
+SELECT emp_id, emp_name, dept, salary, bname
+FROM emp_master NATURAL JOIN branch_master;
+
+-- 6️⃣ Find employees working at Delhi Branch with salary > 10000 and list their names with city
+SELECT e.emp_name, a.city, e.salary
+FROM emp_master e
+JOIN emp_address a ON e.emp_id = a.emp_id
+JOIN branch_master b ON a.branch_id = b.branch_id
+WHERE b.bname = 'Delhi Branch' AND e.salary > 10000;
+
+-- 7️⃣ Create a view showing emp_id, emp_name, branch name, and total salary at each branch
+CREATE OR REPLACE VIEW branch_salary_view AS
+SELECT b.bname, e.emp_id, e.emp_name, e.salary,
+SUM(e.salary) OVER (PARTITION BY b.branch_id) AS total_salary
+FROM emp_master e
+JOIN branch_master b ON e.branch_id = b.branch_id;
+
+-- ✅ View the created view
+SELECT * FROM branch_salary_view;
+
+-- ==========================================
+-- ✅ Step 5: Verification
+-- ==========================================
+SHOW DATABASES;
+SHOW TABLES;
+DESC emp_master;
+DESC branch_master;
+DESC contact_details;
+DESC emp_address;
+
+-- ==========================================
+-- ✅ End of PRACTICAL 8 — BANK DATABASE
+-- ==========================================
