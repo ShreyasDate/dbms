@@ -1,0 +1,84 @@
+-- ==========================================
+-- 📘 PRACTICAL 2 — UNIVERSITY DATABASE (v2)
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE university_v2;
+USE university_v2;
+
+-- ✅ Step 2: Create all required tables
+CREATE TABLE department (
+    dept_no INT,
+    dept_name VARCHAR(30) UNIQUE,
+    building_name VARCHAR(30)
+);
+
+CREATE TABLE instructor (
+    ins_id INT,
+    ins_name VARCHAR(30) NOT NULL,
+    dept_no INT,
+    salary FLOAT,
+    mob_no BIGINT
+);
+
+CREATE TABLE course (
+    course_id INT,
+    title VARCHAR(30),
+    dept_no INT,
+    credits INT
+);
+
+CREATE TABLE teaches (
+    teacher_id INT,
+    course_id INT,
+    semester INT,
+    year INT
+);
+
+-- ✅ Step 3: Add primary and foreign key constraints
+ALTER TABLE department ADD PRIMARY KEY (dept_no);
+ALTER TABLE instructor ADD FOREIGN KEY (dept_no) REFERENCES department(dept_no);
+
+-- ✅ Step 4: Add a new column 'budget' to department
+ALTER TABLE department ADD COLUMN budget FLOAT;
+
+-- ✅ Step 5: Create unique index on instructor mobile number
+CREATE UNIQUE INDEX idx_mob_no ON instructor(mob_no);
+
+-- ✅ Step 6: Remove 'budget' column from department
+ALTER TABLE department DROP COLUMN budget;
+
+-- ✅ Step 7: Increase the size of 'title' column in course table
+ALTER TABLE course MODIFY title VARCHAR(50);
+
+-- ✅ Step 8: Drop the index created on instructor
+DROP INDEX idx_mob_no ON instructor;
+
+-- ✅ Step 9: Rename 'course' table to 'subject'
+RENAME TABLE course TO subject;
+
+-- ✅ Step 10: Create a view showing instructor name and course title
+CREATE VIEW instructor_subject_view AS
+SELECT i.ins_name, s.title
+FROM instructor i
+JOIN subject s ON i.dept_no = s.dept_no;
+
+-- ✅ Step 11: Try deleting the primary key (will fail due to FK dependency)
+-- ALTER TABLE department DROP PRIMARY KEY;
+-- ⚠️ If needed, first drop FK using:
+-- ALTER TABLE instructor DROP FOREIGN KEY instructor_ibfk_1;
+
+-- ✅ Step 12: Delete all records from instructor table
+TRUNCATE TABLE instructor;
+
+-- ✅ Step 13: Show database and tables for verification
+SHOW DATABASES;
+SHOW TABLES;
+DESC department;
+DESC instructor;
+DESC subject;
+DESC teaches;
+
+-- ==========================================
+-- ✅ End of Practical 2 — University Database
+-- ==========================================
