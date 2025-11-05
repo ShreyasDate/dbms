@@ -1,0 +1,72 @@
+-- 🎓 UNIVERSITY DATABASE PRACTICAL (Problem Statement 1)
+-- Execute these steps in MySQL terminal one by one
+
+-- 🧩 STEP 1: Create and use the database
+CREATE DATABASE university;
+USE university;
+
+-- 🧩 STEP 2: Create required tables
+CREATE TABLE department (
+    dept_no INT,
+    dept_name VARCHAR(30) UNIQUE,
+    building_name VARCHAR(30)
+);
+
+CREATE TABLE instructor (
+    ins_id INT,
+    ins_name VARCHAR(30) NOT NULL,
+    dept_no INT,
+    salary FLOAT,
+    mob_no BIGINT
+);
+
+CREATE TABLE course (
+    course_id INT,
+    title VARCHAR(30),
+    dept_no INT,
+    credits INT
+);
+
+CREATE TABLE teaches (
+    teacher_id INT,
+    course_id INT,
+    semester INT,
+    year INT
+);
+
+-- 🧩 STEP 3: Apply constraints
+ALTER TABLE department ADD PRIMARY KEY (dept_no);
+ALTER TABLE instructor ADD FOREIGN KEY (dept_no) REFERENCES department(dept_no);
+
+-- 🧩 STEP 4: Create a view (excluding salary column)
+CREATE VIEW view_instructor AS
+SELECT ins_id, ins_name, dept_no, mob_no FROM instructor;
+
+-- 🧩 STEP 5: Insert sample records into department and instructor (via view)
+INSERT INTO department VALUES (1, 'Computer', 'Bldg-A');
+INSERT INTO department VALUES (2, 'Mechanical', 'Bldg-B');
+
+INSERT INTO view_instructor VALUES (101, 'Aditi', 1, 9876543210);
+INSERT INTO view_instructor VALUES (102, 'Rohan', 2, 9998887776);
+
+-- 🧩 STEP 6: Update department name
+UPDATE department SET dept_name = 'IT' WHERE dept_no = 1;
+
+-- 🧩 STEP 7: Delete a record using view
+DELETE FROM view_instructor WHERE ins_id = 102;
+
+-- 🧩 STEP 8: Delete the last record from instructor table
+DELETE FROM instructor ORDER BY ins_id DESC LIMIT 1;
+
+-- 🧩 STEP 9: Apply AUTO_INCREMENT to course_id (start from 51)
+ALTER TABLE course MODIFY course_id INT AUTO_INCREMENT;
+ALTER TABLE course AUTO_INCREMENT = 51;
+
+-- 🧩 STEP 10: Display databases and tables
+SHOW DATABASES;
+SHOW TABLES;
+
+-- 🧩 (OPTIONAL) If you want to delete teaches table at the end:
+-- DROP TABLE teaches;
+
+-- ✅ PRACTICAL COMPLETED SUCCESSFULLY
