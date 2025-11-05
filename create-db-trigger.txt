@@ -1,0 +1,114 @@
+-- ==========================================
+-- 📘 PRACTICAL 6 — LIBRARY MANAGEMENT SYSTEM (TRIGGER)
+-- ==========================================
+
+-- ✅ Step 1: Create database and switch to it
+CREATE DATABASE library_trigger_db;
+USE library_trigger_db;
+
+-- ✅ Step 2: Create required tables
+CREATE TABLE Library (
+    Book_id INT PRIMARY KEY,
+    Title VARCHAR(50),
+    Edition VARCHAR(20),
+    No_of_copies INT
+);
+
+CREATE TABLE Library_Audit (
+    Book_id INT,
+    Title VARCHAR(50),
+    Edition VARCHAR(20),
+    No_of_copies INT,
+    Date_of_mod DATETIME,
+    Type_of_operation VARCHAR(20),
+    User_name VARCHAR(30)
+);
+
+CREATE TABLE Transaction_Table (
+    Transaction_id INT PRIMARY KEY AUTO_INCREMENT,
+    Book_id INT,
+    S_id INT,
+    Issue_or_Return VARCHAR(10),
+    No_of_copies_issued INT,
+    Issue_or_Return_Date DATE,
+    FOREIGN KEY (Book_id) REFERENCES Library(Book_id)
+);
+
+-- ✅ Step 3: Insert sample records into Library table
+INSERT INTO Library VALUES
+(1, 'Database Systems', '3rd', 5),
+(2, 'Operating Systems', '2nd', 3),
+(3, 'Computer Networks', '1st', 4),
+(4, 'Software Engineering', '4th', 2);
+
+-- ==========================================
+-- ✅ Step 4: Create Triggers
+-- ==========================================
+
+-- 1️⃣ Trigger: Check available copies before issuing a book
+DELIMITER //
+CREATE TRIGGER before_book_issue
+BEFORE INSERT ON Transaction_Table
+FOR EACH ROW
+BEGIN
+    DECLARE available_copies INT;
+    IF NEW.Issue_or_Return = 'Issue' THEN
+        SELECT No_of_copies INTO available_copies
+        FROM Library
+        WHERE Book_id = NEW.Book_id;
+
+        IF available_copies < NEW.No_of_copies_issued THEN
+            SIGNAL SQLSTATE '45000'
+            SET MESSAGE_TEXT = 'Not enough copies available to issue.';
+        ELSE
+            UPDATE Library
+            SET No_of_copies = No_of_copies - NEW.No_of_copies_issued
+            WHERE Book_id = NEW.Book_id;
+        END IF;
+    END IF;
+END //
+DELIMITER ;
+
+-- 2️⃣ Trigger: Update number of copies when a book is returned
+DELIMITER //
+CREATE TRIGGER after_book_return
+AFTER INSERT ON Transaction_Table
+FOR EACH ROW
+BEGIN
+    IF NEW.Issue_or_Return = 'Return' THEN
+        UPDATE Library
+        SET No_of_copies = No_of_copies + NEW.No_of_copies_issued
+        WHERE Book_id = NEW.Book_id;
+    END IF;
+END //
+DELIMITER ;
+
+-- ==========================================
+-- ✅ Step 5: Perform Transactions
+-- ==========================================
+
+-- Example 1: Issue 2 copies of Book_id = 1
+INSERT INTO Transaction_Table (Book_id, S_id, Issue_or_Return, No_of_copies_issued, Issue_or_Return_Date)
+VALUES (1, 201, 'Issue', 2, CURDATE());
+
+-- Example 2: Return 1 copy of Book_id = 1
+INSERT INTO Transaction_Table (Book_id, S_id, Issue_or_Return, No_of_copies_issued, Issue_or_Return_Date)
+VALUES (1, 201, 'Return', 1, CURDATE());
+
+-- Example 3: Try issuing more copies than available (should throw error)
+-- INSERT INTO Transaction_Table (Book_id, S_id, Issue_or_Return, No_of_copies_issued, Issue_or_Return_Date)
+-- VALUES (1, 202, 'Issue', 10, CURDATE());
+
+-- ==========================================
+-- ✅ Step 6: View Results
+-- ==========================================
+
+-- View current books with updated copies
+SELECT * FROM Library;
+
+-- View transaction history
+SELECT * FROM Transaction_Table;
+
+-- ==========================================
+-- ✅ End of PRACTICAL 6 — LIBRARY MANAGEMENT SYSTEM (TRIGGER)
+-- ==========================================
